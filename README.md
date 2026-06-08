@@ -1,12 +1,13 @@
 # su26-ai301-contribution
 # Contribution #1: crypto/x509: VerifyHostname treats zone-scoped IPv6 literals as DNS names
 
-**Contribution Number:** 1  
-**Student:** Richelle Williams 
-**Issue:** https://github.com/golang/go/issues/79719 
-**Status:** Phase IV Complete
+**Contribution Number:** 1
+**Student:** Richelle Williams
+**Issue:** https://github.com/golang/go/issues/79719
+**Status:** Phase II Complete
 
 **Fork:** https://github.com/RichWilliams772/RichelleWGO
+
 ---
 
 ## Why I Chose This Issue
@@ -31,32 +32,55 @@ The verification logic does not properly recognize these IPv6 addresses and trea
 
 ### Affected Components
 
-- crypto/x509 package
-- VerifyHostname function
-- TLS certificate verification logic
-- IPv6 address handling
+* `crypto/x509` package
+* `VerifyHostname` function
+* TLS certificate verification logic
+* IPv6 address handling
 
 ---
+
+# Phase II: Reproduce & Plan
 
 ## Reproduction Process
 
 ### Environment Setup
 
-The repository has been forked and the issue has been reviewed. Local setup and reproduction will be completed during Phase II. Any setup challenges, solutions, and observations will be documented as the issue investigation progresses.
+I cloned my fork of the Go repository and opened it locally in VS Code. After reviewing the issue description, I navigated to the affected package (`crypto/x509`) and located the relevant source file, `src/crypto/x509/verify.go`, where the hostname verification logic is implemented.
+
+**Working Branch:**
+https://github.com/RichWilliams772/RichelleWGO/tree/fix-issue-79719
+
+Setup Notes:
+
+* Cloned the Go repository from GitHub.
+* Opened the project in VS Code.
+* Created and pushed a dedicated branch named `fix-issue-79719`.
+* Located the affected package (`crypto/x509`).
+* Opened and reviewed `verify.go` to begin investigating the root cause.
 
 ### Steps to Reproduce
 
-1. Set up the Go development environment.
-2. Build the project locally.
-3. Create a test case using an IPv6 address with a zone identifier.
-4. Attempt hostname verification using the affected functionality.
-5. Observe the failed certificate validation.
+1. Clone the Go repository locally.
+2. Create and switch to the `fix-issue-79719` branch.
+3. Navigate to `src/crypto/x509/verify.go`.
+4. Locate the `VerifyHostname` function.
+5. Review how hostname values are classified and validated.
+6. Use a zone-scoped IPv6 address such as `fe80::1%eth0` during hostname verification.
+7. Observe the verification behavior.
+
+**Expected Result:**
+Zone-scoped IPv6 addresses should be recognized as valid IP addresses and matched against the certificate IP SAN.
+
+**Actual Result:**
+Zone-scoped IPv6 addresses are not handled correctly during hostname verification, which can result in certificate validation failure.
 
 ### Reproduction Evidence
 
-- **Commit showing reproduction:** To be added during Phase II.
-- **Screenshots/logs:** To be added during Phase II.
-- **My findings:** To be documented after successful reproduction.
+**Branch Link:**
+https://github.com/RichWilliams772/RichelleWGO/tree/fix-issue-79719
+
+**My Findings:**
+After locating and reviewing `verify.go`, I confirmed that the issue is related to hostname classification during certificate verification. According to the issue description, zone-scoped IPv6 addresses are not handled correctly, causing the verification process to follow the wrong validation path and fail when it should succeed.
 
 ---
 
@@ -64,62 +88,41 @@ The repository has been forked and the issue has been reviewed. Local setup and 
 
 ### Analysis
 
-Based on the issue description, the problem appears to be related to how the hostname verification logic processes IPv6 addresses that include zone identifiers. The current implementation does not correctly classify these addresses, causing the verification process to follow an incorrect validation path.
+The root cause appears to be related to how the `VerifyHostname` function determines whether a hostname should be treated as an IP address or a DNS name. Zone-scoped IPv6 addresses contain additional information that is not correctly handled by the current parsing logic, resulting in incorrect certificate verification behavior.
 
-### Proposed Solution
+### Implementation Plan (UMPIRE)
 
-Investigate the address parsing and verification logic and update it so that zone-scoped IPv6 addresses are correctly identified and validated. Additional tests will be added to ensure the issue is resolved and does not reoccur.
+**Understand:**
+The hostname verification process incorrectly handles IPv6 addresses containing zone identifiers, causing certificate validation failures.
 
-### Implementation Plan
-
-**Understand:**  
-Review how hostname verification currently works and identify where IPv6 addresses are processed.
-
-**Match:**  
-Look for similar address-parsing implementations elsewhere in the Go codebase and compare existing patterns.
+**Match:**
+Review existing IP parsing patterns within the Go codebase and compare them to approaches that properly support IPv6 zone identifiers.
 
 **Plan:**
 
-1. Locate the relevant verification code.
-2. Analyze how IPv6 addresses are currently parsed.
-3. Modify the logic to properly handle zone identifiers.
-4. Create test cases covering the affected scenario.
-5. Verify that all existing tests continue to pass.
+1. Review the implementation of `VerifyHostname` in `src/crypto/x509/verify.go`.
+2. Identify where hostname classification and IP parsing occur.
+3. Determine how zone-scoped IPv6 addresses are currently processed.
+4. Modify the parsing logic to correctly recognize zone identifiers.
+5. Add test coverage for IPv6 addresses containing zone identifiers.
+6. Run the relevant `crypto/x509` tests.
+7. Verify that existing functionality continues to work correctly.
 
-**Implement:**  
-Implementation work will begin during Phase III.
+**Implement:**
+Implementation will be completed on branch `fix-issue-79719`.
 
 **Review:**
 
-- [ ] Follow project contribution guidelines.
-- [ ] Maintain code quality and readability.
-- [ ] Add appropriate test coverage.
-- [ ] Verify no existing functionality is broken.
+* Follow Go contribution guidelines.
+* Maintain code readability and quality.
+* Add targeted test coverage.
+* Verify no regressions are introduced.
 
 **Evaluate:**
 
-- Run existing tests.
-- Run new IPv6-related tests.
-- Confirm successful hostname verification for affected cases.
-
----
-
-## Testing Strategy
-
-### Unit Tests
-
-- [ ] Test standard IPv4 addresses.
-- [ ] Test standard IPv6 addresses.
-- [ ] Test IPv6 addresses with zone identifiers.
-
-### Integration Tests
-
-- [ ] Certificate validation using IPv6 addresses.
-- [ ] Hostname verification with zone-scoped IPv6 addresses.
-
-### Manual Testing
-
-Manual testing will be performed after implementation to confirm that certificate validation succeeds for affected IPv6 scenarios.
+* Run existing `crypto/x509` tests.
+* Run new tests covering zone-scoped IPv6 addresses.
+* Confirm hostname verification succeeds when expected.
 
 ---
 
@@ -127,56 +130,26 @@ Manual testing will be performed after implementation to confirm that certificat
 
 ### Week 1 Progress
 
-- Selected an open-source issue.
-- Reviewed the issue description and requirements.
-- Forked the Go repository.
-- Analyzed the problem and potential root cause.
-- Created and documented a contribution plan.
+* Selected an open-source issue.
+* Forked the Go repository.
+* Cloned the repository locally.
+* Created and pushed a dedicated working branch.
+* Located the affected file (`src/crypto/x509/verify.go`).
+* Investigated the issue and documented a solution plan.
 
 ### Code Changes
 
-- **Files modified:** None yet.
-- **Key commits:** To be added later.
-- **Approach decisions:** Initial investigation and planning completed.
+**Files Modified:** None yet
 
----
-
-## Pull Request
-
-**PR Link:** To be added when submitted.
-
-**PR Description:** To be completed during implementation.
-
-**Maintainer Feedback:**
-
-- Pending
-
-**Status:** Not Started
-
----
-
-## Learnings & Reflections
-
-### Technical Skills Gained
-
-- Improved understanding of open-source contribution workflows.
-- Learned more about hostname verification and TLS validation.
-- Developed experience analyzing bugs within a large codebase.
-
-### Challenges Overcome
-
-- Understanding the context of the issue and identifying the affected functionality within a large project.
-- Interpreting technical documentation and issue discussions.
-
-### What I'd Do Differently Next Time
-
-I would spend additional time exploring related source files and existing test cases before planning my implementation approach.
+**Working Branch:**
+https://github.com/RichWilliams772/RichelleWGO/tree/fix-issue-79719
 
 ---
 
 ## Resources Used
 
-- https://github.com/golang/go/issues/79719
-- https://pkg.go.dev/crypto/x509
-- https://pkg.go.dev/net/netip
-- Go Contributor Guide
+* https://github.com/golang/go/issues/79719
+* https://pkg.go.dev/crypto/x509
+* https://pkg.go.dev/net/netip
+* Go Contributor Guide
+
